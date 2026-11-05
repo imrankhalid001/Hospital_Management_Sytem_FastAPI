@@ -23,3 +23,12 @@ class PatientOut(BaseModel):
 
 
 model_config = ConfigDict(from_attributes=True)
+
+class StaffCreate(BaseModel):
+    email: str
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"    
+ 
