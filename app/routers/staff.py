@@ -18,7 +18,7 @@ async def signup(staff: StaffCreate, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Staff).where(Staff.email == staff.email))
     if result.scalar_one_or_none() is not None:
         raise HTTPException(status_code=400, detail="Email already registered")
-    new_staff = Staff(email=staff.email, password=hash_password(staff.password))
+    new_staff = Staff(email=staff.email, hashed_password=hash_password(staff.password))
     db.add(new_staff)
     await db.commit()
     return {"message": "Staff registered successfully"}
@@ -28,7 +28,7 @@ async def signup(staff: StaffCreate, db: AsyncSession = Depends(get_db)):
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession =  Depends(get_db)):
     result = await db.execute(select(Staff).where(Staff.email == form_data.username))
     staff = result.scalar_one_or_none()
-    if staff is None or not verify_password(form_data.password, staff.password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    if staff is None or not verify_password(form_data.password, staff.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
     token = create_access_token(data={"sub": staff.email})
     return Token(access_token=token)
